@@ -1,0 +1,450 @@
+{
+  "enabled": true,
+  "onlyAddToMineableObjects": true,
+  "scanIntervalSeconds": 8.0,
+  "largeBodyReserveMultiplier": 1000000.0,
+  "largeBodyObjectTypes": [ "Planet", "Moons", "DwarfPlanet", "Protoplanet" ],
+  "rules": [
+    {
+      "name": "Luna baseline",
+      "notes": "Lunar regolith contains oxygen, silicon, metals, trace volatiles, polar ice, solar-wind hydrogen, noble gases, and trace helium-3.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "LUNA", "MOON", "CELESTIALBODIESNAMES.MOON" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 1400000, "miningFactor": 0.12, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "oxygen bound in silicates and oxides" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 1200000, "miningFactor": 0.14, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicate-rich crust and regolith" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 850000, "miningFactor": 0.10, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "iron-bearing basalt, oxides, and core-derived metal" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 90000, "miningFactor": 0.035, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor titanium, thorium, rare metals" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 90000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "carbon-rich impactor contribution and trace lunar volatiles" },
+        { "resourceId": "id_resource_water", "minimumAmount": 80000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "polar shadow ice and hydrated regolith" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 60000, "miningFactor": 0.02, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "solar-wind implanted hydrogen" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 7000, "miningFactor": 0.004, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "helium, neon, argon in the lunar exosphere/regolith" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 3000, "miningFactor": 0.002, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "trace nitrogen-bearing volatiles" },
+        { "resourceId": "id_resource_hel3", "minimumAmount": 12000, "miningFactor": 0.004, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "solar-wind implanted helium-3" },
+        { "resourceId": "id_resource_uran", "minimumAmount": 12000, "miningFactor": 0.004, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "trace uranium and thorium" }
+      ]
+    },
+    {
+      "name": "Mercury baseline",
+      "notes": "Metal-rich, silicate surface with polar ice and thin exosphere species.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "MERCURY", "CELESTIALBODIESNAMES.MERCURY" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_metal", "minimumAmount": 1000000, "miningFactor": 0.12, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "large metallic core and metal-bearing crust" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 900000, "miningFactor": 0.11, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicate crust" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 800000, "miningFactor": 0.10, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "oxygen bound in surface minerals" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 120000, "miningFactor": 0.035, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor refractory and metal-rich material" },
+        { "resourceId": "id_resource_water", "minimumAmount": 70000, "miningFactor": 0.018, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "permanently shadowed polar ice" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 30000, "miningFactor": 0.012, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "exosphere and polar volatile association" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 20000, "miningFactor": 0.008, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "low but non-zero carbon-bearing impactor volatiles" },
+        { "resourceId": "id_resource_uran", "minimumAmount": 20000, "miningFactor": 0.006, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "trace fissile elements" }
+      ]
+    },
+    {
+      "name": "Venus baseline",
+      "notes": "CO2 and nitrogen atmosphere plus basaltic surface and trace water vapor.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "VENUS", "CELESTIALBODIESNAMES.VENUS" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_volatile", "minimumAmount": 5000000, "miningFactor": 0.30, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "carbon dioxide atmosphere mapped to Carbon" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 600000, "miningFactor": 0.08, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen atmosphere" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 60000, "miningFactor": 0.015, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "argon and other trace gases" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 1000000, "miningFactor": 0.10, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "oxygen bound in basaltic crust and CO2" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 1000000, "miningFactor": 0.12, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "basaltic silicates" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 900000, "miningFactor": 0.10, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "iron-bearing basalt and core material" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 80000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor crustal rare metals" },
+        { "resourceId": "id_resource_water", "minimumAmount": 10000, "miningFactor": 0.003, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "trace atmospheric water vapor" },
+        { "resourceId": "id_resource_uran", "minimumAmount": 25000, "miningFactor": 0.006, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "trace fissile elements" }
+      ]
+    },
+    {
+      "name": "Earth baseline",
+      "notes": "Only tops up missing Earth deposits if the base game omitted them.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "EARTH", "CELESTIALBODIESNAMES.EARTH" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 5000000, "miningFactor": 0.30, "state": "Liquid", "fullyExplored": true, "forcePrimary": false, "reason": "surface oceans and groundwater" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 4000000, "miningFactor": 0.22, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "oxygen atmosphere and crustal oxides" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 3500000, "miningFactor": 0.22, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen atmosphere" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 3500000, "miningFactor": 0.18, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "biosphere, carbonates, hydrocarbons, and organics" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 3000000, "miningFactor": 0.18, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "metal ores and core-derived metals" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 2200000, "miningFactor": 0.18, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicate crust" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 400000, "miningFactor": 0.06, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rare metal deposits" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 100000, "miningFactor": 0.02, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "argon and trace noble gases" },
+        { "resourceId": "id_resource_uran", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "uranium and thorium ores" }
+      ]
+    },
+    {
+      "name": "Mars baseline",
+      "notes": "CO2 atmosphere, water ice, hydrated minerals, basalt and iron oxides.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "MARS", "CELESTIALBODIESNAMES.MARS" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_volatile", "minimumAmount": 1500000, "miningFactor": 0.12, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "carbon dioxide atmosphere mapped to Carbon" },
+        { "resourceId": "id_resource_water", "minimumAmount": 600000, "miningFactor": 0.08, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "polar and subsurface ice" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 150000, "miningFactor": 0.03, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "thin nitrogen atmosphere" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 90000, "miningFactor": 0.025, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "argon-rich trace atmosphere" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 900000, "miningFactor": 0.10, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "iron oxides and silicate minerals" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 1000000, "miningFactor": 0.11, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "iron-rich basalt and oxides" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 900000, "miningFactor": 0.11, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "basaltic silicates" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 90000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor rare metals" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 70000, "miningFactor": 0.02, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water and hydrated minerals" },
+        { "resourceId": "id_resource_uran", "minimumAmount": 25000, "miningFactor": 0.006, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "trace fissile elements" }
+      ]
+    },
+    {
+      "name": "Phobos and Deimos baseline",
+      "notes": "Primitive rocky/carbonaceous bodies with low volatiles.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "PHOBOS", "DEIMOS", "CELESTIALBODIESNAMES.PHOBOS", "CELESTIALBODIESNAMES.DEIMOS" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_metal", "minimumAmount": 300000, "miningFactor": 0.06, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky material" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 250000, "miningFactor": 0.06, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicates" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 90000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "carbonaceous material" },
+        { "resourceId": "id_resource_water", "minimumAmount": 50000, "miningFactor": 0.015, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "hydrated minerals and impactor volatiles" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 40000, "miningFactor": 0.012, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor metals" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 120000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "oxygen bound in minerals" }
+      ]
+    },
+    {
+      "name": "Jupiter baseline",
+      "notes": "Hydrogen/helium giant with water/ammonia clouds, methane traces, and noble gases.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "JUPITER", "CELESTIALBODIESNAMES.JUPITER" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 12000000, "miningFactor": 0.40, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "hydrogen-rich atmosphere" },
+        { "resourceId": "id_resource_hel3", "minimumAmount": 750000, "miningFactor": 0.05, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "helium isotope in giant-planet atmosphere" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 500000, "miningFactor": 0.05, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "helium and noble gases" },
+        { "resourceId": "id_resource_water", "minimumAmount": 400000, "miningFactor": 0.03, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "water clouds and deep atmospheric water" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 250000, "miningFactor": 0.02, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "methane and carbon-bearing trace species" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 200000, "miningFactor": 0.02, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "ammonia and nitrogen-bearing species" }
+      ]
+    },
+    {
+      "name": "Io baseline",
+      "notes": "Rocky, volcanic, sulfur-rich, and depleted in water compared with icy Galilean moons.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "IO", "CELESTIALBODIESNAMES.IO" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 650000, "miningFactor": 0.08, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicate and sulfur-oxide chemistry" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 650000, "miningFactor": 0.09, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicate volcanics" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 550000, "miningFactor": 0.08, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky metal-bearing interior" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 55000, "miningFactor": 0.018, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor refractory metals" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 40000, "miningFactor": 0.01, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "sulfur dioxide and trace carbon-bearing volatiles" },
+        { "resourceId": "id_resource_uran", "minimumAmount": 10000, "miningFactor": 0.003, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "trace fissile elements" }
+      ]
+    },
+    {
+      "name": "Icy Galilean moons baseline",
+      "notes": "Europa, Ganymede, and Callisto are ice-rich worlds above rocky and metallic interiors.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "EUROPA", "GANYMEDE", "CALLISTO", "CELESTIALBODIESNAMES.EUROPA", "CELESTIALBODIESNAMES.GANYMEDE", "CELESTIALBODIESNAMES.CALLISTO" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 1600000, "miningFactor": 0.18, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "ice shells and subsurface water" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 400000, "miningFactor": 0.08, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice and oxidized surface material" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 300000, "miningFactor": 0.07, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 120000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "carbonaceous and radiolytic chemistry" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 250000, "miningFactor": 0.05, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky and metallic interiors" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 200000, "miningFactor": 0.045, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silicate interiors" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 30000, "miningFactor": 0.008, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor metals" }
+      ]
+    },
+    {
+      "name": "Small Jovian moon baseline",
+      "notes": "Small mixed rocky/icy moon baseline.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "AMALTHEA", "CELESTIALBODIESNAMES.AMALTHEA" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 250000, "miningFactor": 0.05, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "icy component" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 90000, "miningFactor": 0.02, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "dark carbonaceous surface material" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 120000, "miningFactor": 0.03, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky material" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 110000, "miningFactor": 0.03, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicates" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 100000, "miningFactor": 0.03, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "ice and silicates" }
+      ]
+    },
+    {
+      "name": "Saturn baseline",
+      "notes": "Hydrogen/helium giant with water, ammonia, methane, and trace gases.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "SATURN", "CELESTIALBODIESNAMES.SATURN" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 11000000, "miningFactor": 0.38, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "hydrogen-rich atmosphere" },
+        { "resourceId": "id_resource_hel3", "minimumAmount": 700000, "miningFactor": 0.045, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "helium isotope in giant-planet atmosphere" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 450000, "miningFactor": 0.045, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "helium and noble gases" },
+        { "resourceId": "id_resource_water", "minimumAmount": 350000, "miningFactor": 0.025, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "water clouds and ring/moon ice source" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 250000, "miningFactor": 0.02, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "methane and carbon-bearing species" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 180000, "miningFactor": 0.018, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "ammonia and nitrogen-bearing species" }
+      ]
+    },
+    {
+      "name": "Titan baseline",
+      "notes": "Dense nitrogen/methane atmosphere, hydrocarbon lakes, organic surface materials, water ice, and likely subsurface ocean.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "TITAN", "CELESTIALBODIESNAMES.TITAN" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 4000000, "miningFactor": 0.25, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen-rich atmosphere" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 2500000, "miningFactor": 0.22, "state": "Liquid", "fullyExplored": true, "forcePrimary": false, "reason": "methane, ethane, and organic hydrocarbons mapped to Carbon" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 700000, "miningFactor": 0.08, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "hydrocarbons and water ice" },
+        { "resourceId": "id_resource_water", "minimumAmount": 1100000, "miningFactor": 0.12, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water ice and subsurface ocean" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 300000, "miningFactor": 0.06, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice and oxygen-bearing organics" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 100000, "miningFactor": 0.02, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "trace atmospheric gases" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 150000, "miningFactor": 0.03, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky interior" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 150000, "miningFactor": 0.03, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silicate interior" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 15000, "miningFactor": 0.004, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor metals" }
+      ]
+    },
+    {
+      "name": "Enceladus baseline",
+      "notes": "Water ice, salty global ocean, organics, CO2/CO, hydrogen, nitrogen/oxygen-bearing organics, silica, and rocky hydrothermal interaction.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "ENCELADUS", "CELESTIALBODIESNAMES.ENCELADUS" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 1500000, "miningFactor": 0.18, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "ice shell and global ocean" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 350000, "miningFactor": 0.06, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "organic compounds and carbon oxides" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 220000, "miningFactor": 0.05, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "hydrogen in plume chemistry" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 120000, "miningFactor": 0.03, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen-bearing organics" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 250000, "miningFactor": 0.05, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice and oxygen-bearing compounds" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silica nanograins from water-rock interaction" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky core" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 10000, "miningFactor": 0.003, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor metals" }
+      ]
+    },
+    {
+      "name": "Other icy Saturn moons baseline",
+      "notes": "Water-ice rich with dark carbonaceous contaminants and rocky fractions.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "RHEA", "IAPETUS", "TETHYS", "MIMAS", "HYPERION", "DIONE", "CELESTIALBODIESNAMES.RHEA", "CELESTIALBODIESNAMES.IAPETUS", "CELESTIALBODIESNAMES.TETHYS", "CELESTIALBODIESNAMES.MIMAS", "CELESTIALBODIESNAMES.HYPERION", "CELESTIALBODIESNAMES.DIONE" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 900000, "miningFactor": 0.12, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 180000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice and oxidized surface material" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 150000, "miningFactor": 0.035, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "dark carbonaceous material" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 120000, "miningFactor": 0.03, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky fraction" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silicate fraction" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 10000, "miningFactor": 0.003, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor metals" }
+      ]
+    },
+    {
+      "name": "Uranus and Neptune baseline",
+      "notes": "Ice giants with hydrogen/helium/methane atmospheres and water/ammonia/methane-rich interiors.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "URANUS", "NEPTUNE", "CELESTIALBODIESNAMES.URANUS", "CELESTIALBODIESNAMES.NEPTUNE" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 8000000, "miningFactor": 0.28, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "hydrogen-rich atmosphere" },
+        { "resourceId": "id_resource_hel3", "minimumAmount": 450000, "miningFactor": 0.035, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "helium isotope in atmosphere" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 350000, "miningFactor": 0.035, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "helium and noble gases" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 1200000, "miningFactor": 0.12, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "methane and carbon-bearing ices" },
+        { "resourceId": "id_resource_water", "minimumAmount": 2500000, "miningFactor": 0.16, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water-rich ice-giant interior" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 300000, "miningFactor": 0.025, "state": "Gas", "fullyExplored": true, "forcePrimary": false, "reason": "ammonia/nitrogen-bearing species" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 600000, "miningFactor": 0.05, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water and ice-giant oxygen inventory" }
+      ]
+    },
+    {
+      "name": "Uranian icy moons baseline",
+      "notes": "Icy-rocky bodies with carbon-darkened surfaces and rocky interiors.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "UMBRIEL", "PUCK", "TITANIA", "OBERON", "ARIEL", "MIRANDA", "CELESTIALBODIESNAMES.UMBRIEL", "CELESTIALBODIESNAMES.PUCK", "CELESTIALBODIESNAMES.TITANIA", "CELESTIALBODIESNAMES.OBERON", "CELESTIALBODIESNAMES.ARIEL", "CELESTIALBODIESNAMES.MIRANDA" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 700000, "miningFactor": 0.10, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 160000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice and oxidized material" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 120000, "miningFactor": 0.03, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "carbonaceous dark material" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 40000, "miningFactor": 0.01, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor nitrogen-bearing volatiles" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky interior" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 90000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silicates" }
+      ]
+    },
+    {
+      "name": "Triton baseline",
+      "notes": "Nitrogen, methane, carbon monoxide, and water ice over a rocky interior.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "TRITON", "CELESTIALBODIESNAMES.TRITON" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 1000000, "miningFactor": 0.12, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen ice and thin atmosphere" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 600000, "miningFactor": 0.08, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "methane and carbon monoxide ices" },
+        { "resourceId": "id_resource_water", "minimumAmount": 900000, "miningFactor": 0.12, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water ice crust" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 180000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water and methane ice" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 180000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky interior" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 90000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silicate interior" }
+      ]
+    },
+    {
+      "name": "Other Neptune moons baseline",
+      "notes": "Icy-rocky irregular bodies.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "PROTEUS", "NEREID", "CELESTIALBODIESNAMES.PROTEUS", "CELESTIALBODIESNAMES.NEREID" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 500000, "miningFactor": 0.08, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 150000, "miningFactor": 0.035, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "carbon/nitrogen volatile inventory" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 80000, "miningFactor": 0.02, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen-bearing volatiles" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 120000, "miningFactor": 0.03, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 80000, "miningFactor": 0.02, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky fraction" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 70000, "miningFactor": 0.02, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silicates" }
+      ]
+    },
+    {
+      "name": "Pluto and Charon baseline",
+      "notes": "Icy-rocky Kuiper Belt bodies with water ice, nitrogen, methane, and carbon monoxide.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "PLUTO", "CHARON", "CELESTIALBODIESNAMES.PLUTO", "CELESTIALBODIESNAMES.CHARON" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 750000, "miningFactor": 0.09, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen ice and atmosphere on Pluto" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 500000, "miningFactor": 0.08, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "methane and carbon monoxide ices" },
+        { "resourceId": "id_resource_water", "minimumAmount": 750000, "miningFactor": 0.10, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water ice crust and mantle" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 160000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "methane and water ice" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 160000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 90000, "miningFactor": 0.02, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky core" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 80000, "miningFactor": 0.02, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silicate core material" }
+      ]
+    },
+    {
+      "name": "Ceres baseline",
+      "notes": "Water-rich with hydrated minerals, carbonates, ammoniated clays, organics, and rocky material.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "CERES", "CELESTIALBODIESNAMES.CERES" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 900000, "miningFactor": 0.12, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "subsurface ice and hydrated minerals" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 300000, "miningFactor": 0.06, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "organics and carbonates" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 80000, "miningFactor": 0.02, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "ammoniated clays" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 250000, "miningFactor": 0.055, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky material" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 220000, "miningFactor": 0.05, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicates" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 50000, "miningFactor": 0.014, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor metals" },
+        { "resourceId": "id_resource_uran", "minimumAmount": 15000, "miningFactor": 0.004, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "trace fissile elements" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 180000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "ice, carbonates, and silicates" }
+      ]
+    },
+    {
+      "name": "Psyche metal-rich baseline",
+      "notes": "Metal-rich asteroid baseline.",
+      "objectTypes": [],
+      "targetNames": [],
+      "targetContains": [ "PSYCHE", "CELESTIALBODIESNAMES.PSYCHE" ],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_metal", "minimumAmount": 2000000, "miningFactor": 0.18, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "metal-rich asteroid composition" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 300000, "miningFactor": 0.08, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "nickel-iron and siderophile metals" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 200000, "miningFactor": 0.035, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicate fraction" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 20000, "miningFactor": 0.006, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor carbonaceous/impact volatiles" },
+        { "resourceId": "id_resource_water", "minimumAmount": 10000, "miningFactor": 0.004, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "trace hydrated material" }
+      ]
+    },
+    {
+      "name": "Generic asteroid and protoplanet baseline",
+      "notes": "Applies to named belt bodies not given a specific rule. Low metal/silicate baselines plus conservative water/carbon traces.",
+      "objectTypes": [ "Asteroid", "Protoplanet" ],
+      "targetNames": [],
+      "targetContains": [],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_metal", "minimumAmount": 300000, "miningFactor": 0.06, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky and metallic asteroid material" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 250000, "miningFactor": 0.05, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "silicates" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 60000, "miningFactor": 0.018, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor metal-rich phases" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 40000, "miningFactor": 0.012, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "carbonaceous material on many primitive asteroids" },
+        { "resourceId": "id_resource_water", "minimumAmount": 30000, "miningFactor": 0.01, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "hydrated minerals and ice in primitive asteroids" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 100000, "miningFactor": 0.03, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "oxygen bound in silicates" },
+        { "resourceId": "id_resource_uran", "minimumAmount": 8000, "miningFactor": 0.002, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "trace fissile elements" }
+      ]
+    },
+    {
+      "name": "Generic comet baseline",
+      "notes": "Volatile-rich mixtures of water ice, carbon-bearing compounds, dust, and trapped gases.",
+      "objectTypes": [ "Comet" ],
+      "targetNames": [],
+      "targetContains": [],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 500000, "miningFactor": 0.12, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 250000, "miningFactor": 0.08, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "carbon-bearing ices and organics" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 150000, "miningFactor": 0.05, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water and hydrocarbon ice" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 80000, "miningFactor": 0.025, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen-bearing volatiles" },
+        { "resourceId": "id_resource_noblegas", "minimumAmount": 20000, "miningFactor": 0.006, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "trapped noble gases" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 120000, "miningFactor": 0.035, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 60000, "miningFactor": 0.015, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "dust and silicates" }
+      ]
+    },
+    {
+      "name": "Generic dwarf planet baseline",
+      "notes": "Fallback for dwarf planets beyond named Pluto/Ceres cases: icy-rocky bodies with nitrogen/carbon volatiles.",
+      "objectTypes": [ "DwarfPlanet" ],
+      "targetNames": [],
+      "targetContains": [],
+      "targetTranslationPrefixes": [],
+      "excludeTargetContains": [],
+      "deposits": [
+        { "resourceId": "id_resource_water", "minimumAmount": 650000, "miningFactor": 0.09, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_volatile", "minimumAmount": 300000, "miningFactor": 0.06, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "methane and carbon-bearing ices" },
+        { "resourceId": "id_resource_nitrogen", "minimumAmount": 200000, "miningFactor": 0.04, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "nitrogen-bearing ice" },
+        { "resourceId": "id_resource_hydrogen", "minimumAmount": 120000, "miningFactor": 0.03, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water and methane ice" },
+        { "resourceId": "id_resource_oxygen", "minimumAmount": 180000, "miningFactor": 0.035, "state": "Solid", "fullyExplored": true, "forcePrimary": false, "reason": "water ice" },
+        { "resourceId": "id_resource_metal", "minimumAmount": 120000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "rocky core" },
+        { "resourceId": "id_resource_silicon", "minimumAmount": 100000, "miningFactor": 0.025, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "silicates" },
+        { "resourceId": "id_resource_raremetal", "minimumAmount": 20000, "miningFactor": 0.005, "state": "Underground", "fullyExplored": true, "forcePrimary": false, "reason": "minor metals" }
+      ]
+    }
+  ]
+}
