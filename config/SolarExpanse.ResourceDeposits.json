@@ -4,6 +4,12 @@
   "scanIntervalSeconds": 8.0,
   "largeBodyReserveMultiplier": 1000000.0,
   "largeBodyObjectTypes": [ "Planet", "Moons", "DwarfPlanet", "Protoplanet" ],
+  "largeBodyReserveMultiplierExcludedStates": [ "Gas", "Liquid" ],
+  "remapLargeBodyFluidDepositsToUnderground": true,
+  "largeBodyFluidDepositStateOverride": "Underground",
+  "cleanupLegacyUnsafeFluidDeposits": true,
+  "cleanupLegacyFluidMultiplierThreshold": 100000.0,
+  "cleanupLegacyFluidMinimumValue": 1000000000.0,
   "rules": [
     {
       "name": "Luna baseline",

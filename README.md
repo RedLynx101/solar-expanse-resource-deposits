@@ -13,18 +13,19 @@ The goal is not to make every world rich. The goal is to make major worlds viabl
 - Game: **Solar Expanse `0.26.4.29.11 BETA`**
 - Platform tested: Windows Steam build
 - Mod loader: BepInEx 5.x, Unity Mono x64
-- Current mod version: `0.1.4`
+- Current mod version: `0.1.5`
 
 Solar Expanse is in beta, so game updates may change internal method names or save/runtime structures. This mod intentionally uses runtime hooks and a JSON config to keep the maintenance surface small.
 
 ## What It Does
 
 - Adds or tops up missing resource deposits using Solar Expanse's own `ObjectInfo.AddDeposit(...)` path.
-- Never removes deposits.
+- Never removes base-game deposits. Version `0.1.5` can remove oversized unsafe `Gas`/`Liquid` rows created by earlier mod builds.
 - Never lowers base values.
 - Only adds the missing amount needed to reach a configured floor.
 - Gives planets, moons, dwarf planets, and protoplanets very large reserve floors by default.
 - Keeps scarce materials slow to mine by using low `miningFactor` values.
+- Keeps large reserve floors out of actual atmosphere/ocean state rows by storing added large-body fluid-style resources as underground reserves.
 - Loads deposit rules from `BepInEx/config/SolarExpanse.ResourceDeposits.json`.
 
 Examples:
@@ -33,8 +34,24 @@ Examples:
 - Venus and Mars get carbon from their CO2-heavy atmospheres.
 - Titan gets nitrogen and carbon-rich hydrocarbon deposits.
 - Icy moons get large water/oxygen/hydrogen reserves plus lower-yield volatiles.
-- Gas and ice giants get large gas-state hydrogen and trace-resource reserves.
+- Gas and ice giants get large hydrogen and trace-resource reserves without inflating active atmosphere rows.
 - Generic asteroid, comet, dwarf-planet, and protoplanet rules cover bodies that do not have a specific rule.
+
+## Resource Grounding
+
+The config is intentionally conservative about *where* resources are represented. Solar Expanse uses `Gas` and `Liquid` rows as active atmosphere/ocean values, so the mod uses `Underground` rows for added large-body volatile reserves even when the source material would be water ice, CO2 ice, trapped solar-wind volatiles, hydrated minerals, carbon-rich material, or oxygen bound in regolith.
+
+The rule set is guided by public planetary-science references rather than exact ore-body modeling. Useful anchors include NASA's lunar composition summary, NASA/LRO and LCROSS work on lunar polar ice and volatiles, ESA work on extracting oxygen and metal from lunar regolith, NASA's Mars water-ice mapping, NASA Dawn findings for Ceres, and NASA OSIRIS-REx findings that carbonaceous asteroid material can contain water and high carbon.
+
+References:
+
+- [NASA: Moon Composition](https://science.nasa.gov/moon/composition/)
+- [NASA: Lunar Ice Deposits Are Widespread](https://science.nasa.gov/solar-system/moon/nasas-lro-lunar-ice-deposits-are-widespread/)
+- [NASA: Lunar Volatile Cycles](https://science.nasa.gov/lunar-science/focus-areas/volatile-cycles/)
+- [ESA: Oxygen and Metal From Lunar Regolith](https://www.esa.int/ESA_Multimedia/Images/2019/10/Oxygen_and_metal_from_lunar_regolith)
+- [NASA: Treasure Map for Water Ice on Mars](https://www.nasa.gov/solar-system/nasas-treasure-map-for-water-ice-on-mars/)
+- [NASA: Ceres](https://science.nasa.gov/mission/dawn/science/ceres/)
+- [NASA: Bennu Sample Contains Carbon and Water](https://www.nasa.gov/news-release/nasas-bennu-asteroid-sample-contains-carbon-water/)
 
 ## Installation
 
@@ -81,6 +98,9 @@ Important fields:
 - `scanIntervalSeconds`: retry interval for runtime application.
 - `largeBodyReserveMultiplier`: multiplier applied to planets, moons, dwarf planets, and protoplanets.
 - `largeBodyObjectTypes`: object types that receive the large-body multiplier.
+- `largeBodyReserveMultiplierExcludedStates`: effective states that do not receive the large-body multiplier. Defaults to `Gas` and `Liquid`.
+- `remapLargeBodyFluidDepositsToUnderground`: stores added large-body gas/liquid resources as underground reserves instead of changing active atmosphere/ocean mass.
+- `cleanupLegacyUnsafeFluidDeposits`: removes oversized gas/liquid rows created by older mod versions.
 - `rules`: target matchers and deposit specs.
 
 Each deposit has:
@@ -124,9 +144,11 @@ Solar Expanse\BepInEx\LogOutput.log
 A healthy load should include:
 
 ```text
-Loading [Solar Expanse Resource Deposits 0.1.4]
+Loading [Solar Expanse Resource Deposits 0.1.5]
 Installed 5 lifecycle hook(s) for resource deposit application.
 ```
+
+Version `0.1.5` or newer is recommended. Earlier versions could create oversized `Gas` or `Liquid` rows on major bodies, which may affect habitability because the game treats those rows as actual atmosphere or ocean mass.
 
 If deposits are not visible:
 

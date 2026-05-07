@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.5
+
+- Prevent large-body reserve multiplication from applying to effective `Gas` and `Liquid` rows.
+- Remap added large-body gas/liquid resources to `Underground` by default so large reserve floors remain available without mutating active atmosphere/ocean mass.
+- Add cleanup for oversized legacy `Gas`/`Liquid` rows created by older mod versions.
+- Fixes Earth and other major bodies becoming uninhabitable due to oversized atmosphere/ocean resource rows.
+
 ## 0.1.4
 
 - Make the BepInEx plugin host persistent across Solar Expanse scene loads.

@@ -21,7 +21,7 @@ namespace SolarExpanse.ResourceDeposits
     {
         private const string PluginGuid = "noahh.solarexpanse.resourcedeposits";
         private const string PluginName = "Solar Expanse Resource Deposits";
-        private const string PluginVersion = "0.1.4";
+        private const string PluginVersion = "0.1.5";
         private const string ConfigFileName = "SolarExpanse.ResourceDeposits.json";
 
         private ManualLogSource _log;
@@ -248,8 +248,11 @@ namespace SolarExpanse.ResourceDeposits
 
         private bool EnsureDeposit(object objectInfo, DepositRule rule, DepositSpec deposit)
         {
-            var targetMinimum = GetEffectiveMinimumAmount(objectInfo, deposit);
-            var existingTotal = GetExistingResourceTotal(objectInfo, deposit.resourceId);
+            CleanupLegacyUnsafeFluidDepositRows(objectInfo, rule, deposit);
+
+            var effectiveStateName = GetEffectiveDepositStateName(objectInfo, deposit);
+            var targetMinimum = GetEffectiveMinimumAmount(objectInfo, deposit, effectiveStateName);
+            var existingTotal = GetExistingResourceTotal(objectInfo, deposit.resourceId, effectiveStateName);
             var missingAmount = targetMinimum - existingTotal;
             if (missingAmount <= 0d)
             {
@@ -269,7 +272,7 @@ namespace SolarExpanse.ResourceDeposits
             SetMemberValue(row, "MiningFactor", Mathf.Clamp(deposit.miningFactor <= 0f ? 0.01f : deposit.miningFactor, 0.001f, 1f));
             SetMemberValue(row, "ForcePrimary", deposit.forcePrimary);
 
-            var state = ParseResourceState(deposit.state);
+            var state = ParseResourceState(effectiveStateName);
             if (state != null)
             {
                 SetMemberValue(row, "ResourceState", state);
@@ -285,8 +288,57 @@ namespace SolarExpanse.ResourceDeposits
             addDeposit.Invoke(objectInfo, new object[] { row, deposit.fullyExplored });
 
             var objectName = GetBestObjectName(objectInfo);
-            _log.LogInfo($"{rule.name}: added {missingAmount.ToString("0", CultureInfo.InvariantCulture)} {deposit.resourceId} to {objectName} as {deposit.state}.");
+            _log.LogInfo($"{rule.name}: added {missingAmount.ToString("0", CultureInfo.InvariantCulture)} {deposit.resourceId} to {objectName} as {effectiveStateName}.");
             return true;
+        }
+
+        private void CleanupLegacyUnsafeFluidDepositRows(object objectInfo, DepositRule rule, DepositSpec deposit)
+        {
+            if (!_config.cleanupLegacyUnsafeFluidDeposits || !IsLargeBody(objectInfo) || !IsFluidState(deposit.state))
+            {
+                return;
+            }
+
+            var rows = GetResourceRows(objectInfo).ToList();
+            if (rows.Count == 0)
+            {
+                return;
+            }
+
+            var threshold = Math.Max(
+                _config.cleanupLegacyFluidMinimumValue,
+                Math.Max(1d, deposit.minimumAmount) * Math.Max(1d, _config.cleanupLegacyFluidMultiplierThreshold));
+
+            var removeDeposit = objectInfo.GetType().GetMethod("RemoveDeposit", BindingFlags.Instance | BindingFlags.Public);
+            if (removeDeposit == null)
+            {
+                WarnOnce("missing-removedeposit", "ObjectInfo.RemoveDeposit was not found; cannot clean legacy oversized fluid rows.");
+                return;
+            }
+
+            foreach (var row in rows)
+            {
+                var rowResourceId = GetRowResourceId(row);
+                if (!string.Equals(rowResourceId, deposit.resourceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var rowState = GetRowResourceStateName(row);
+                if (!string.Equals(Normalize(rowState), Normalize(deposit.state), StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var rowValue = GetDoubleMember(row, "Value", 0d);
+                if (rowValue < threshold)
+                {
+                    continue;
+                }
+
+                removeDeposit.Invoke(objectInfo, new[] { row });
+                _log.LogInfo($"{rule.name}: removed legacy oversized {deposit.state} row {rowValue.ToString("0", CultureInfo.InvariantCulture)} {deposit.resourceId} from {GetBestObjectName(objectInfo)}. Threshold: {threshold.ToString("0", CultureInfo.InvariantCulture)}.");
+            }
         }
 
         private void ResolveTypes()
@@ -393,13 +445,10 @@ namespace SolarExpanse.ResourceDeposits
             }
         }
 
-        private double GetEffectiveMinimumAmount(object objectInfo, DepositSpec deposit)
+        private double GetEffectiveMinimumAmount(object objectInfo, DepositSpec deposit, string effectiveStateName)
         {
             var amount = Math.Max(0d, deposit.minimumAmount);
-            var objectType = Normalize(GetMemberValue(objectInfo, "objectTypes")?.ToString());
-            var largeBodyTypes = _config.largeBodyObjectTypes ?? new List<string>();
-            var isLargeBody = largeBodyTypes.Any(t => Normalize(t) == objectType);
-            if (!isLargeBody)
+            if (!IsLargeBody(objectInfo) || IsLargeBodyMultiplierExcludedState(effectiveStateName))
             {
                 return amount;
             }
@@ -407,16 +456,41 @@ namespace SolarExpanse.ResourceDeposits
             return amount * Math.Max(1d, _config.largeBodyReserveMultiplier);
         }
 
-        private double GetExistingResourceTotal(object objectInfo, string resourceId)
+        private string GetEffectiveDepositStateName(object objectInfo, DepositSpec deposit)
         {
-            var rows = GetMemberValue(objectInfo, "ListRowResourcesData") as IEnumerable;
-            if (rows == null)
+            if (!_config.remapLargeBodyFluidDepositsToUnderground || !IsLargeBody(objectInfo) || !IsFluidState(deposit.state))
             {
-                return 0f;
+                return string.IsNullOrWhiteSpace(deposit.state) ? "Underground" : deposit.state;
             }
 
+            return string.IsNullOrWhiteSpace(_config.largeBodyFluidDepositStateOverride)
+                ? "Underground"
+                : _config.largeBodyFluidDepositStateOverride;
+        }
+
+        private bool IsLargeBody(object objectInfo)
+        {
+            var objectType = Normalize(GetMemberValue(objectInfo, "objectTypes")?.ToString());
+            var largeBodyTypes = _config.largeBodyObjectTypes ?? new List<string>();
+            return largeBodyTypes.Any(t => Normalize(t) == objectType);
+        }
+
+        private bool IsLargeBodyMultiplierExcludedState(string state)
+        {
+            var states = _config.largeBodyReserveMultiplierExcludedStates ?? new List<string>();
+            return states.Any(s => Normalize(s) == Normalize(state));
+        }
+
+        private static bool IsFluidState(string state)
+        {
+            var normalized = Normalize(state);
+            return normalized == "GAS" || normalized == "LIQUID";
+        }
+
+        private double GetExistingResourceTotal(object objectInfo, string resourceId, string stateName)
+        {
             double total = 0;
-            foreach (var row in rows)
+            foreach (var row in GetResourceRows(objectInfo))
             {
                 if (row == null)
                 {
@@ -429,10 +503,32 @@ namespace SolarExpanse.ResourceDeposits
                     continue;
                 }
 
+                if (!string.Equals(Normalize(GetRowResourceStateName(row)), Normalize(stateName), StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
                 total += GetDoubleMember(row, "Value", 0d);
             }
 
             return total;
+        }
+
+        private IEnumerable<object> GetResourceRows(object objectInfo)
+        {
+            var rows = GetMemberValue(objectInfo, "ListRowResourcesData") as IEnumerable;
+            if (rows == null)
+            {
+                yield break;
+            }
+
+            foreach (var row in rows)
+            {
+                if (row != null)
+                {
+                    yield return row;
+                }
+            }
         }
 
         private string GetRowResourceId(object row)
@@ -453,6 +549,13 @@ namespace SolarExpanse.ResourceDeposits
             return GetStringMember(resource, "ID")
                 ?? GetStringMember(resource, "id")
                 ?? GetStringMember(resource, "Id");
+        }
+
+        private string GetRowResourceStateName(object row)
+        {
+            return GetMemberValue(row, "ResourceState")?.ToString()
+                ?? GetMemberValue(row, "resourceState")?.ToString()
+                ?? string.Empty;
         }
 
         private bool RuleMatches(object objectInfo, DepositRule rule)
@@ -786,12 +889,19 @@ namespace SolarExpanse.ResourceDeposits
         public float scanIntervalSeconds = 8f;
         public double largeBodyReserveMultiplier = 1000000d;
         public List<string> largeBodyObjectTypes = new List<string> { "Planet", "Moons", "DwarfPlanet", "Protoplanet" };
+        public List<string> largeBodyReserveMultiplierExcludedStates = new List<string> { "Gas", "Liquid" };
+        public bool remapLargeBodyFluidDepositsToUnderground = true;
+        public string largeBodyFluidDepositStateOverride = "Underground";
+        public bool cleanupLegacyUnsafeFluidDeposits = true;
+        public double cleanupLegacyFluidMultiplierThreshold = 100000d;
+        public double cleanupLegacyFluidMinimumValue = 1000000000d;
         public List<DepositRule> rules = new List<DepositRule>();
 
         public void Normalize()
         {
             rules = rules ?? new List<DepositRule>();
             largeBodyObjectTypes = largeBodyObjectTypes ?? new List<string> { "Planet", "Moons", "DwarfPlanet", "Protoplanet" };
+            largeBodyReserveMultiplierExcludedStates = largeBodyReserveMultiplierExcludedStates ?? new List<string> { "Gas", "Liquid" };
             if (scanIntervalSeconds < 2f)
             {
                 scanIntervalSeconds = 8f;
@@ -799,6 +909,18 @@ namespace SolarExpanse.ResourceDeposits
             if (largeBodyReserveMultiplier < 1d)
             {
                 largeBodyReserveMultiplier = 1000000d;
+            }
+            if (cleanupLegacyFluidMultiplierThreshold < 1d)
+            {
+                cleanupLegacyFluidMultiplierThreshold = 100000d;
+            }
+            if (cleanupLegacyFluidMinimumValue < 0d)
+            {
+                cleanupLegacyFluidMinimumValue = 1000000000d;
+            }
+            if (string.IsNullOrWhiteSpace(largeBodyFluidDepositStateOverride))
+            {
+                largeBodyFluidDepositStateOverride = "Underground";
             }
         }
     }
@@ -839,6 +961,12 @@ namespace SolarExpanse.ResourceDeposits
                 scanIntervalSeconds = 8f,
                 largeBodyReserveMultiplier = 1000000d,
                 largeBodyObjectTypes = new List<string> { "Planet", "Moons", "DwarfPlanet", "Protoplanet" },
+                largeBodyReserveMultiplierExcludedStates = new List<string> { "Gas", "Liquid" },
+                remapLargeBodyFluidDepositsToUnderground = true,
+                largeBodyFluidDepositStateOverride = "Underground",
+                cleanupLegacyUnsafeFluidDeposits = true,
+                cleanupLegacyFluidMultiplierThreshold = 100000d,
+                cleanupLegacyFluidMinimumValue = 1000000000d,
                 rules = new List<DepositRule>
                 {
                     Rule("Luna baseline", new[] { "LUNA", "MOON", "CELESTIALBODIESNAMES.MOON" }, null,
