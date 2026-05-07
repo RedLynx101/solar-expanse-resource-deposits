@@ -21,21 +21,28 @@ namespace SolarExpanse.ResourceDeposits
     {
         private const string PluginGuid = "noahh.solarexpanse.resourcedeposits";
         private const string PluginName = "Solar Expanse Resource Deposits";
-        private const string PluginVersion = "0.1.5";
+        private const string PluginVersion = "0.1.6";
         private const string ConfigFileName = "SolarExpanse.ResourceDeposits.json";
+        private const string AppliedStateFileName = "SolarExpanse.ResourceDeposits.applied.json";
 
         private ManualLogSource _log;
         private DepositConfig _config;
         private string _configPath;
+        private string _appliedStatePath;
+        private AppliedState _appliedState = new AppliedState();
         private Type _objectInfoManagerType;
         private Type _rowResourcesDataType;
         private Type _resourceStateType;
         private readonly Dictionary<string, object> _resourceCache = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _warningOnce = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _appliedKeysThisSession = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private Harmony _harmony;
         private int _lastObjectCount = -1;
         private int _emptyScanCount;
         private float _nextUpdateScanTime;
+        private string _currentCampaignKey = "runtime";
+        private bool _initialApplicationComplete;
+        private bool _appliedStateDirty;
         private static Plugin _instance;
 
         private void Awake()
@@ -45,6 +52,7 @@ namespace SolarExpanse.ResourceDeposits
             DontDestroyOnLoad(gameObject);
             gameObject.hideFlags = HideFlags.HideAndDontSave;
             LoadConfig();
+            LoadAppliedState();
             InstallHarmonyHooks();
             SceneManager.sceneLoaded += OnSceneLoaded;
             TryApplySafe("awake");
@@ -62,12 +70,18 @@ namespace SolarExpanse.ResourceDeposits
         {
             _lastObjectCount = -1;
             _nextUpdateScanTime = 0f;
+            _initialApplicationComplete = false;
             TryApplySafe("sceneLoaded:" + scene.name);
         }
 
         private void Update()
         {
             if (_config == null || !_config.enabled)
+            {
+                return;
+            }
+
+            if (_initialApplicationComplete && !_config.continuousRescan)
             {
                 return;
             }
@@ -86,7 +100,11 @@ namespace SolarExpanse.ResourceDeposits
         {
             while (true)
             {
-                TryApplySafe("coroutine");
+                if (!_initialApplicationComplete || (_config != null && _config.continuousRescan))
+                {
+                    TryApplySafe("coroutine");
+                }
+
                 var seconds = _config == null ? 8f : Mathf.Max(2f, _config.scanIntervalSeconds);
                 yield return new WaitForSecondsRealtime(seconds);
             }
@@ -172,6 +190,49 @@ namespace SolarExpanse.ResourceDeposits
             }
         }
 
+        private void LoadAppliedState()
+        {
+            _appliedStatePath = Path.Combine(Paths.ConfigPath, AppliedStateFileName);
+            Directory.CreateDirectory(Paths.ConfigPath);
+
+            if (!File.Exists(_appliedStatePath))
+            {
+                _appliedState = new AppliedState();
+                return;
+            }
+
+            try
+            {
+                var json = File.ReadAllText(_appliedStatePath, Encoding.UTF8);
+                _appliedState = JsonConvert.DeserializeObject<AppliedState>(json) ?? new AppliedState();
+                _appliedState.Normalize();
+            }
+            catch (Exception ex)
+            {
+                _appliedState = new AppliedState();
+                WarnOnce("applied-state-load", $"Could not load {AppliedStateFileName}; this run will still be guarded in memory. {ex.Message}");
+            }
+        }
+
+        private void SaveAppliedStateIfDirty()
+        {
+            if (!_appliedStateDirty || _appliedStatePath == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _appliedState.Normalize();
+                File.WriteAllText(_appliedStatePath, JsonConvert.SerializeObject(_appliedState, Formatting.Indented), Encoding.UTF8);
+                _appliedStateDirty = false;
+            }
+            catch (Exception ex)
+            {
+                WarnOnce("applied-state-save", $"Could not save {AppliedStateFileName}; this run remains guarded in memory only. {ex.Message}");
+            }
+        }
+
         private void TryApply(string trigger)
         {
             if (_config == null || !_config.enabled)
@@ -180,6 +241,12 @@ namespace SolarExpanse.ResourceDeposits
             }
 
             ResolveTypes();
+            RefreshCampaignKey();
+            if (_initialApplicationComplete && !_config.continuousRescan)
+            {
+                return;
+            }
+
             if (_objectInfoManagerType == null || _rowResourcesDataType == null)
             {
                 WarnOnce("missing-core-types", "Solar Expanse runtime types are not loaded yet.");
@@ -206,6 +273,7 @@ namespace SolarExpanse.ResourceDeposits
             }
 
             var addedRows = 0;
+            var cleanedRows = 0;
             foreach (var objectInfo in objectInfos)
             {
                 if (objectInfo == null)
@@ -232,30 +300,169 @@ namespace SolarExpanse.ResourceDeposits
                             continue;
                         }
 
-                        if (EnsureDeposit(objectInfo, rule, deposit))
+                        if (EnsureDeposit(objectInfo, rule, deposit, out var depositCleanedRows))
                         {
                             addedRows++;
                         }
+
+                        cleanedRows += depositCleanedRows;
                     }
                 }
             }
 
-            if (addedRows > 0)
+            if (addedRows > 0 || cleanedRows > 0)
             {
-                _log.LogInfo($"Added {addedRows} resource deposit row(s). Existing deposits were only topped up when below configured minimums.");
+                _log.LogInfo($"One-time resource pass changed {addedRows} deposit row(s) and cleaned {cleanedRows} duplicate/unsafe row(s).");
             }
+
+            _initialApplicationComplete = true;
+            SaveAppliedStateIfDirty();
+            _log.LogInfo($"Completed one-time resource deposit scan for campaign '{_currentCampaignKey}' during {trigger}.");
         }
 
-        private bool EnsureDeposit(object objectInfo, DepositRule rule, DepositSpec deposit)
+        private void RefreshCampaignKey()
         {
-            CleanupLegacyUnsafeFluidDepositRows(objectInfo, rule, deposit);
+            var resolved = ResolveCampaignKey();
+            if (string.IsNullOrWhiteSpace(resolved))
+            {
+                resolved = "runtime";
+            }
 
+            if (string.Equals(_currentCampaignKey, resolved, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            _currentCampaignKey = resolved;
+            _appliedKeysThisSession.Clear();
+            _initialApplicationComplete = false;
+            _lastObjectCount = -1;
+        }
+
+        private string ResolveCampaignKey()
+        {
+            var gameManagerType = FindType("Manager.GameManager");
+            var gameManager = GetSingletonInstance(gameManagerType) ?? FindUnityObject(gameManagerType);
+            var startGameConfig = GetMemberValue(gameManager, "StartGameConfig") ?? GetMemberValue(gameManager, "startGameConfig");
+            var gameplayId = GetStringMember(startGameConfig, "gameplayID");
+            if (!string.IsNullOrWhiteSpace(gameplayId))
+            {
+                return "gameplay:" + gameplayId.Trim();
+            }
+
+            var loadSaveManagerType = FindType("Manager.LoadSaveManager");
+            var loadSaveManager = GetSingletonInstance(loadSaveManagerType) ?? FindUnityObject(loadSaveManagerType);
+            var lastSaveName = GetStringMember(loadSaveManager, "LastSaveName") ?? GetStringMember(loadSaveManager, "lastSaveName");
+            if (!string.IsNullOrWhiteSpace(lastSaveName))
+            {
+                return "save:" + lastSaveName.Trim();
+            }
+
+            return "runtime";
+        }
+
+        private bool IsPersistentCampaignKey(string campaignKey)
+        {
+            return campaignKey != null &&
+                (campaignKey.StartsWith("gameplay:", StringComparison.OrdinalIgnoreCase) ||
+                 campaignKey.StartsWith("save:", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private bool IsApplicationRecorded(string applicationKey)
+        {
+            if (string.IsNullOrWhiteSpace(applicationKey))
+            {
+                return false;
+            }
+
+            if (_appliedKeysThisSession.Contains(applicationKey))
+            {
+                return true;
+            }
+
+            if (!_config.applyOncePerCampaign || !IsPersistentCampaignKey(_currentCampaignKey))
+            {
+                return false;
+            }
+
+            var state = GetCampaignAppliedState(_currentCampaignKey);
+            return state.appliedKeys.Any(key => string.Equals(key, applicationKey, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private void RecordApplication(string applicationKey)
+        {
+            if (string.IsNullOrWhiteSpace(applicationKey) || !_config.applyOncePerCampaign)
+            {
+                return;
+            }
+
+            _appliedKeysThisSession.Add(applicationKey);
+            if (!IsPersistentCampaignKey(_currentCampaignKey))
+            {
+                return;
+            }
+
+            var state = GetCampaignAppliedState(_currentCampaignKey);
+            if (state.appliedKeys.Any(key => string.Equals(key, applicationKey, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
+            state.appliedKeys.Add(applicationKey);
+            state.lastAppliedUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture);
+            _appliedStateDirty = true;
+        }
+
+        private CampaignAppliedState GetCampaignAppliedState(string campaignKey)
+        {
+            _appliedState.Normalize();
+            if (!_appliedState.campaigns.TryGetValue(campaignKey, out var state) || state == null)
+            {
+                state = new CampaignAppliedState { campaignKey = campaignKey };
+                _appliedState.campaigns[campaignKey] = state;
+                _appliedStateDirty = true;
+            }
+
+            state.appliedKeys = state.appliedKeys ?? new List<string>();
+            return state;
+        }
+
+        private string BuildApplicationKey(object objectInfo, DepositRule rule, DepositSpec deposit, string effectiveStateName, double targetMinimum)
+        {
+            var objectId = GetIntMember(objectInfo, "id", -1);
+            var objectKey = objectId >= 0
+                ? "id:" + objectId.ToString(CultureInfo.InvariantCulture)
+                : "name:" + Normalize(GetBestObjectName(objectInfo));
+
+            return string.Join("|", new[]
+            {
+                objectKey,
+                Normalize(rule.name),
+                Normalize(deposit.resourceId),
+                Normalize(effectiveStateName),
+                targetMinimum.ToString("R", CultureInfo.InvariantCulture),
+                Math.Max(0.001f, deposit.miningFactor).ToString("R", CultureInfo.InvariantCulture)
+            });
+        }
+
+        private bool EnsureDeposit(object objectInfo, DepositRule rule, DepositSpec deposit, out int cleanedRows)
+        {
             var effectiveStateName = GetEffectiveDepositStateName(objectInfo, deposit);
             var targetMinimum = GetEffectiveMinimumAmount(objectInfo, deposit, effectiveStateName);
+            cleanedRows = CleanupLegacyUnsafeFluidDepositRows(objectInfo, rule, deposit);
+            cleanedRows += CleanupDuplicateConfiguredDepositRows(objectInfo, rule, deposit, effectiveStateName, targetMinimum);
+
+            var applicationKey = BuildApplicationKey(objectInfo, rule, deposit, effectiveStateName, targetMinimum);
+            if (_config.applyOncePerCampaign && IsApplicationRecorded(applicationKey))
+            {
+                return false;
+            }
+
             var existingTotal = GetExistingResourceTotal(objectInfo, deposit.resourceId, effectiveStateName);
             var missingAmount = targetMinimum - existingTotal;
-            if (missingAmount <= 0d)
+            if (missingAmount <= Math.Max(0d, _config.minimumAddAmount))
             {
+                RecordApplication(applicationKey);
                 return false;
             }
 
@@ -289,20 +496,21 @@ namespace SolarExpanse.ResourceDeposits
 
             var objectName = GetBestObjectName(objectInfo);
             _log.LogInfo($"{rule.name}: added {missingAmount.ToString("0", CultureInfo.InvariantCulture)} {deposit.resourceId} to {objectName} as {effectiveStateName}.");
+            RecordApplication(applicationKey);
             return true;
         }
 
-        private void CleanupLegacyUnsafeFluidDepositRows(object objectInfo, DepositRule rule, DepositSpec deposit)
+        private int CleanupLegacyUnsafeFluidDepositRows(object objectInfo, DepositRule rule, DepositSpec deposit)
         {
             if (!_config.cleanupLegacyUnsafeFluidDeposits || !IsLargeBody(objectInfo) || !IsFluidState(deposit.state))
             {
-                return;
+                return 0;
             }
 
             var rows = GetResourceRows(objectInfo).ToList();
             if (rows.Count == 0)
             {
-                return;
+                return 0;
             }
 
             var threshold = Math.Max(
@@ -313,9 +521,10 @@ namespace SolarExpanse.ResourceDeposits
             if (removeDeposit == null)
             {
                 WarnOnce("missing-removedeposit", "ObjectInfo.RemoveDeposit was not found; cannot clean legacy oversized fluid rows.");
-                return;
+                return 0;
             }
 
+            var removedRows = 0;
             foreach (var row in rows)
             {
                 var rowResourceId = GetRowResourceId(row);
@@ -337,8 +546,79 @@ namespace SolarExpanse.ResourceDeposits
                 }
 
                 removeDeposit.Invoke(objectInfo, new[] { row });
+                removedRows++;
                 _log.LogInfo($"{rule.name}: removed legacy oversized {deposit.state} row {rowValue.ToString("0", CultureInfo.InvariantCulture)} {deposit.resourceId} from {GetBestObjectName(objectInfo)}. Threshold: {threshold.ToString("0", CultureInfo.InvariantCulture)}.");
             }
+
+            return removedRows;
+        }
+
+        private int CleanupDuplicateConfiguredDepositRows(object objectInfo, DepositRule rule, DepositSpec deposit, string effectiveStateName, double targetMinimum)
+        {
+            if (!_config.cleanupDuplicateConfiguredDeposits || targetMinimum <= 0d)
+            {
+                return 0;
+            }
+
+            var matches = GetResourceRows(objectInfo)
+                .Where(row =>
+                    string.Equals(GetRowResourceId(row), deposit.resourceId, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(Normalize(GetRowResourceStateName(row)), Normalize(effectiveStateName), StringComparison.Ordinal))
+                .ToList();
+
+            if (matches.Count <= 1)
+            {
+                return 0;
+            }
+
+            var total = matches.Sum(row => GetDoubleMember(row, "Value", 0d));
+            var tolerance = Math.Max(1d, targetMinimum * Math.Max(0d, _config.duplicateCleanupTolerance));
+            if (total <= targetMinimum + tolerance)
+            {
+                return 0;
+            }
+
+            var removeDeposit = objectInfo.GetType().GetMethod("RemoveDeposit", BindingFlags.Instance | BindingFlags.Public);
+            if (removeDeposit == null)
+            {
+                WarnOnce("missing-removedeposit-duplicates", "ObjectInfo.RemoveDeposit was not found; cannot clean duplicate configured deposit rows.");
+                return 0;
+            }
+
+            var excess = total - targetMinimum;
+            var changedRows = 0;
+            foreach (var row in matches.AsEnumerable().Reverse())
+            {
+                if (excess <= 0d)
+                {
+                    break;
+                }
+
+                var value = GetDoubleMember(row, "Value", 0d);
+                if (value <= 0d)
+                {
+                    continue;
+                }
+
+                if (value <= excess + 0.000001d)
+                {
+                    removeDeposit.Invoke(objectInfo, new[] { row });
+                    excess -= value;
+                    changedRows++;
+                    continue;
+                }
+
+                SetMemberValue(row, "Value", value - excess);
+                excess = 0d;
+                changedRows++;
+            }
+
+            if (changedRows > 0)
+            {
+                _log.LogInfo($"{rule.name}: trimmed duplicate {effectiveStateName} rows for {deposit.resourceId} on {GetBestObjectName(objectInfo)} from {total.ToString("0", CultureInfo.InvariantCulture)} toward {targetMinimum.ToString("0", CultureInfo.InvariantCulture)}.");
+            }
+
+            return changedRows;
         }
 
         private void ResolveTypes()
@@ -843,6 +1123,24 @@ namespace SolarExpanse.ResourceDeposits
             }
         }
 
+        private static int GetIntMember(object target, string name, int fallback)
+        {
+            var value = GetMemberValue(target, name);
+            if (value == null)
+            {
+                return fallback;
+            }
+
+            try
+            {
+                return Convert.ToInt32(value, CultureInfo.InvariantCulture);
+            }
+            catch
+            {
+                return fallback;
+            }
+        }
+
         private static string Normalize(string value)
         {
             return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToUpperInvariant();
@@ -886,13 +1184,18 @@ namespace SolarExpanse.ResourceDeposits
     {
         public bool enabled = true;
         public bool onlyAddToMineableObjects = true;
+        public bool applyOncePerCampaign = true;
+        public bool continuousRescan = false;
         public float scanIntervalSeconds = 8f;
+        public double minimumAddAmount = 1d;
         public double largeBodyReserveMultiplier = 1000000d;
         public List<string> largeBodyObjectTypes = new List<string> { "Planet", "Moons", "DwarfPlanet", "Protoplanet" };
         public List<string> largeBodyReserveMultiplierExcludedStates = new List<string> { "Gas", "Liquid" };
         public bool remapLargeBodyFluidDepositsToUnderground = true;
         public string largeBodyFluidDepositStateOverride = "Underground";
         public bool cleanupLegacyUnsafeFluidDeposits = true;
+        public bool cleanupDuplicateConfiguredDeposits = true;
+        public double duplicateCleanupTolerance = 0.001d;
         public double cleanupLegacyFluidMultiplierThreshold = 100000d;
         public double cleanupLegacyFluidMinimumValue = 1000000000d;
         public List<DepositRule> rules = new List<DepositRule>();
@@ -909,6 +1212,14 @@ namespace SolarExpanse.ResourceDeposits
             if (largeBodyReserveMultiplier < 1d)
             {
                 largeBodyReserveMultiplier = 1000000d;
+            }
+            if (minimumAddAmount < 0d)
+            {
+                minimumAddAmount = 1d;
+            }
+            if (duplicateCleanupTolerance < 0d)
+            {
+                duplicateCleanupTolerance = 0.001d;
             }
             if (cleanupLegacyFluidMultiplierThreshold < 1d)
             {
@@ -950,6 +1261,37 @@ namespace SolarExpanse.ResourceDeposits
         public string reason;
     }
 
+    [Serializable]
+    public sealed class AppliedState
+    {
+        public int version = 1;
+        public Dictionary<string, CampaignAppliedState> campaigns = new Dictionary<string, CampaignAppliedState>(StringComparer.OrdinalIgnoreCase);
+
+        public void Normalize()
+        {
+            campaigns = campaigns ?? new Dictionary<string, CampaignAppliedState>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in campaigns.ToList())
+            {
+                if (pair.Value == null)
+                {
+                    campaigns.Remove(pair.Key);
+                    continue;
+                }
+
+                pair.Value.campaignKey = string.IsNullOrWhiteSpace(pair.Value.campaignKey) ? pair.Key : pair.Value.campaignKey;
+                pair.Value.appliedKeys = pair.Value.appliedKeys ?? new List<string>();
+            }
+        }
+    }
+
+    [Serializable]
+    public sealed class CampaignAppliedState
+    {
+        public string campaignKey;
+        public string lastAppliedUtc;
+        public List<string> appliedKeys = new List<string>();
+    }
+
     internal static class DefaultDepositConfig
     {
         public static DepositConfig Create()
@@ -958,13 +1300,18 @@ namespace SolarExpanse.ResourceDeposits
             {
                 enabled = true,
                 onlyAddToMineableObjects = true,
+                applyOncePerCampaign = true,
+                continuousRescan = false,
                 scanIntervalSeconds = 8f,
+                minimumAddAmount = 1d,
                 largeBodyReserveMultiplier = 1000000d,
                 largeBodyObjectTypes = new List<string> { "Planet", "Moons", "DwarfPlanet", "Protoplanet" },
                 largeBodyReserveMultiplierExcludedStates = new List<string> { "Gas", "Liquid" },
                 remapLargeBodyFluidDepositsToUnderground = true,
                 largeBodyFluidDepositStateOverride = "Underground",
                 cleanupLegacyUnsafeFluidDeposits = true,
+                cleanupDuplicateConfiguredDeposits = true,
+                duplicateCleanupTolerance = 0.001d,
                 cleanupLegacyFluidMultiplierThreshold = 100000d,
                 cleanupLegacyFluidMinimumValue = 1000000000d,
                 rules = new List<DepositRule>

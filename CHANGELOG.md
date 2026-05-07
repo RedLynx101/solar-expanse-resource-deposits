@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.6
+
+- Make resource injection one-time per campaign instead of a recurring top-up.
+- Add a persistent applied-state file so restarting the game does not re-apply already injected campaign resources.
+- Stop periodic rescans after the initial successful pass by default.
+- Add duplicate cleanup for configured deposits created by older repeated-scan builds.
+- Avoid creating tiny near-zero deposit rows.
+
 ## 0.1.5
 
 - Prevent large-body reserve multiplication from applying to effective `Gas` and `Liquid` rows.

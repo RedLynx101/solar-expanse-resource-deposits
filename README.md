@@ -13,7 +13,7 @@ The goal is not to make every world rich. The goal is to make major worlds viabl
 - Game: **Solar Expanse `0.26.4.29.11 BETA`**
 - Platform tested: Windows Steam build
 - Mod loader: BepInEx 5.x, Unity Mono x64
-- Current mod version: `0.1.5`
+- Current mod version: `0.1.6`
 
 Solar Expanse is in beta, so game updates may change internal method names or save/runtime structures. This mod intentionally uses runtime hooks and a JSON config to keep the maintenance surface small.
 
@@ -23,9 +23,11 @@ Solar Expanse is in beta, so game updates may change internal method names or sa
 - Never removes base-game deposits. Version `0.1.5` can remove oversized unsafe `Gas`/`Liquid` rows created by earlier mod builds.
 - Never lowers base values.
 - Only adds the missing amount needed to reach a configured floor.
+- Applies each configured deposit once per campaign instead of continually replenishing mined resources.
 - Gives planets, moons, dwarf planets, and protoplanets very large reserve floors by default.
 - Keeps scarce materials slow to mine by using low `miningFactor` values.
 - Keeps large reserve floors out of actual atmosphere/ocean state rows by storing added large-body fluid-style resources as underground reserves.
+- Trims duplicate configured rows created by older builds that repeatedly re-applied the same deposit rules.
 - Loads deposit rules from `BepInEx/config/SolarExpanse.ResourceDeposits.json`.
 
 Examples:
@@ -82,6 +84,7 @@ BepInEx\config\SolarExpanse.ResourceDeposits.json
 ```
 
 Restart the game after deploying. The mod applies after the solar-system objects load.
+After first application, the mod records campaign/object/resource keys in `BepInEx\config\SolarExpanse.ResourceDeposits.applied.json` so it does not keep adding nodes as months pass.
 
 ## Configuration
 
@@ -95,12 +98,16 @@ Important fields:
 
 - `enabled`: turn the mod on or off.
 - `onlyAddToMineableObjects`: skip objects the game marks as non-mineable.
+- `applyOncePerCampaign`: record each applied object/resource/state so the mod does not replenish it later.
+- `continuousRescan`: keep the old recurring scan behavior. Defaults to `false`.
 - `scanIntervalSeconds`: retry interval for runtime application.
+- `minimumAddAmount`: smallest missing amount worth creating as a deposit row.
 - `largeBodyReserveMultiplier`: multiplier applied to planets, moons, dwarf planets, and protoplanets.
 - `largeBodyObjectTypes`: object types that receive the large-body multiplier.
 - `largeBodyReserveMultiplierExcludedStates`: effective states that do not receive the large-body multiplier. Defaults to `Gas` and `Liquid`.
 - `remapLargeBodyFluidDepositsToUnderground`: stores added large-body gas/liquid resources as underground reserves instead of changing active atmosphere/ocean mass.
 - `cleanupLegacyUnsafeFluidDeposits`: removes oversized gas/liquid rows created by older mod versions.
+- `cleanupDuplicateConfiguredDeposits`: trims duplicate configured deposit rows created by older repeated scans.
 - `rules`: target matchers and deposit specs.
 
 Each deposit has:
@@ -144,11 +151,11 @@ Solar Expanse\BepInEx\LogOutput.log
 A healthy load should include:
 
 ```text
-Loading [Solar Expanse Resource Deposits 0.1.5]
+Loading [Solar Expanse Resource Deposits 0.1.6]
 Installed 5 lifecycle hook(s) for resource deposit application.
 ```
 
-Version `0.1.5` or newer is recommended. Earlier versions could create oversized `Gas` or `Liquid` rows on major bodies, which may affect habitability because the game treats those rows as actual atmosphere or ocean mass.
+Version `0.1.6` or newer is recommended. Earlier versions could repeatedly top up configured resources over time. Versions before `0.1.5` could also create oversized `Gas` or `Liquid` rows on major bodies, which may affect habitability because the game treats those rows as actual atmosphere or ocean mass.
 
 If deposits are not visible:
 
