@@ -13,20 +13,21 @@ The goal is not to make every world rich. The goal is to make major worlds viabl
 - Game: **Solar Expanse `0.26.4.29.11 BETA`**
 - Platform tested: Windows Steam build
 - Mod loader: BepInEx 5.x, Unity Mono x64
-- Current mod version: `0.1.6`
+- Current mod version: `0.1.7`
 
 Solar Expanse is in beta, so game updates may change internal method names or save/runtime structures. This mod intentionally uses runtime hooks and a JSON config to keep the maintenance surface small.
 
 ## What It Does
 
 - Adds or tops up missing resource deposits using Solar Expanse's own `ObjectInfo.AddDeposit(...)` path.
-- Never removes base-game deposits. Version `0.1.5` can remove oversized unsafe `Gas`/`Liquid` rows created by earlier mod builds.
+- Never intentionally removes base-game deposits. Cleanup targets legacy unsafe rows created by earlier mod builds.
 - Never lowers base values.
 - Only adds the missing amount needed to reach a configured floor.
 - Applies each configured deposit once per campaign instead of continually replenishing mined resources.
 - Gives planets, moons, dwarf planets, and protoplanets very large reserve floors by default.
 - Keeps scarce materials slow to mine by using low `miningFactor` values.
-- Keeps large reserve floors out of actual atmosphere/ocean state rows by storing added large-body fluid-style resources as underground reserves.
+- Keeps added reserve floors out of actual atmosphere/ocean/surface state rows by storing modded deposits as underground reserves.
+- Cleans legacy mod-created non-underground rows, including old `Solid` rows that the game could later convert into atmosphere.
 - Trims duplicate configured rows created by older builds that repeatedly re-applied the same deposit rules.
 - Loads deposit rules from `BepInEx/config/SolarExpanse.ResourceDeposits.json`.
 
@@ -41,7 +42,7 @@ Examples:
 
 ## Resource Grounding
 
-The config is intentionally conservative about *where* resources are represented. Solar Expanse uses `Gas` and `Liquid` rows as active atmosphere/ocean values, so the mod uses `Underground` rows for added large-body volatile reserves even when the source material would be water ice, CO2 ice, trapped solar-wind volatiles, hydrated minerals, carbon-rich material, or oxygen bound in regolith.
+The config is intentionally conservative about *where* resources are represented. Solar Expanse uses non-`Underground` rows in its terraforming model: `Gas` rows count as active atmosphere mass, liquid water rows count as surface water, and the game's monthly habitability update can repartition `Solid` rows into gas/liquid/solid states. For that reason, version `0.1.7` stores all mod-added deposits as `Underground` rows even when the source material would be water ice, CO2, trapped solar-wind volatiles, hydrated minerals, carbon-rich material, or oxygen bound in regolith.
 
 The rule set is guided by public planetary-science references rather than exact ore-body modeling. Useful anchors include NASA's lunar composition summary, NASA/LRO and LCROSS work on lunar polar ice and volatiles, ESA work on extracting oxygen and metal from lunar regolith, NASA's Mars water-ice mapping, NASA Dawn findings for Ceres, and NASA OSIRIS-REx findings that carbonaceous asteroid material can contain water and high carbon.
 
@@ -104,8 +105,11 @@ Important fields:
 - `minimumAddAmount`: smallest missing amount worth creating as a deposit row.
 - `largeBodyReserveMultiplier`: multiplier applied to planets, moons, dwarf planets, and protoplanets.
 - `largeBodyObjectTypes`: object types that receive the large-body multiplier.
+- `forceConfiguredDepositsUnderground`: force all configured additions into the safe underground state. Defaults to `true`.
+- `forcedDepositState`: target state used when `forceConfiguredDepositsUnderground` is enabled. Defaults to `Underground`.
 - `largeBodyReserveMultiplierExcludedStates`: effective states that do not receive the large-body multiplier. Defaults to `Gas` and `Liquid`.
-- `remapLargeBodyFluidDepositsToUnderground`: stores added large-body gas/liquid resources as underground reserves instead of changing active atmosphere/ocean mass.
+- `remapLargeBodyFluidDepositsToUnderground`: legacy compatibility setting for old configs when underground forcing is disabled.
+- `cleanupLegacyHabitabilityStateDeposits`: removes older mod-created non-underground rows that can affect habitability, then lets the current rule restore the reserve underground.
 - `cleanupLegacyUnsafeFluidDeposits`: removes oversized gas/liquid rows created by older mod versions.
 - `cleanupDuplicateConfiguredDeposits`: trims duplicate configured deposit rows created by older repeated scans.
 - `rules`: target matchers and deposit specs.
@@ -115,7 +119,7 @@ Each deposit has:
 - `resourceId`: Solar Expanse internal resource id.
 - `minimumAmount`: reserve floor before large-body multiplier.
 - `miningFactor`: mining richness/frequency.
-- `state`: `Solid`, `Liquid`, `Gas`, or `Underground`.
+- `state`: the game-facing resource state. The shipped config uses `Underground` for every added deposit.
 - `fullyExplored`: whether the deposit appears immediately.
 - `forcePrimary`: whether to force it as the primary deposit.
 - `reason`: human-readable rationale.
@@ -151,11 +155,11 @@ Solar Expanse\BepInEx\LogOutput.log
 A healthy load should include:
 
 ```text
-Loading [Solar Expanse Resource Deposits 0.1.6]
+Loading [Solar Expanse Resource Deposits 0.1.7]
 Installed 5 lifecycle hook(s) for resource deposit application.
 ```
 
-Version `0.1.6` or newer is recommended. Earlier versions could repeatedly top up configured resources over time. Versions before `0.1.5` could also create oversized `Gas` or `Liquid` rows on major bodies, which may affect habitability because the game treats those rows as actual atmosphere or ocean mass.
+Version `0.1.7` or newer is recommended. Earlier versions could repeatedly top up configured resources over time. Versions before `0.1.7` could also leave modded resources in `Gas`, `Liquid`, or `Solid` states that the game treats as active habitability inputs.
 
 If deposits are not visible:
 

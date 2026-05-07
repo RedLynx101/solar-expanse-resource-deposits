@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.7
+
+- Force all mod-added deposits into `Underground` rows by default so they do not affect atmosphere, surface water, or monthly habitability-state repartitioning.
+- Normalize the shipped config and built-in defaults so every configured deposit state is `Underground`.
+- Add cleanup for legacy mod-created non-underground rows, including old `Solid` rows that Solar Expanse could convert into gas/liquid/solid habitability inputs.
+- Refresh object caches and habitability after cleanup so loaded saves recover without waiting for a monthly tick.
+
 ## 0.1.6
 
 - Make resource injection one-time per campaign instead of a recurring top-up.
